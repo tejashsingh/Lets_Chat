@@ -3,7 +3,8 @@ const { chats }=require("./data/data");
 const dotenv=require("dotenv");
 const connectDB = require("./config/db");
 const colors= require("colors");
-const userRoutes=require('./Routes/userRoutes')
+const userRoutes=require('./Routes/userRoutes');
+const chatRoutes=require('./Routes/chatRoutes');
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const PORT=process.env.PORT || 5000;
 const app=express();
@@ -15,20 +16,16 @@ connectDB();
 app.use(express.json());  //to accept json data
 
 
-
-
-
 app.get("/",(req,res)=>{
     res.send("API is running Successfully");
 })
-app.use("/api/user",userRoutes)
+app.use("/api/user",userRoutes);
+app.use("/api/chat",chatRoutes);
 
-// app.get("/api/chat",userRoutes)
-
-app.get("/api/chat/:id",(req,res)=>{
-    const singleChat= chats.find((c)=> c._id===req.params.id);
-    res.send(singleChat);
-})
+// app.get("/api/chat/:id",(req,res)=>{
+//     const singleChat= chats.find((c)=> c._id===req.params.id);
+//     res.send(singleChat);
+// })
 
 // Error Handling middlewares
 app.use(notFound);
