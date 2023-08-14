@@ -10,7 +10,7 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { Socket } = require("socket.io");
 const PORT=process.env.PORT || 5000;
 const app=express();
-
+const path = require("path");
 
 dotenv.config();
 connectDB();
@@ -19,18 +19,33 @@ connectDB();
 app.use(express.json());  //to accept json data
 
 
-app.get("/",(req,res)=>{
-    res.send("API is running Successfully");
-})
+// app.get("/",(req,res)=>{
+//     res.send("API is running Successfully");
+// })
 app.use("/api/message",messageRoutes);
 app.use("/api/user",userRoutes);
 app.use("/api/chat",chatRoutes);
 
 
-// app.get("/api/chat/:id",(req,res)=>{
-//     const singleChat= chats.find((c)=> c._id===req.params.id);
-//     res.send(singleChat);
-// })
+// --------------------------deployment------------------------------
+
+const __dirname1 = path.resolve();
+
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(__dirname1, "/frontend/build")));
+
+  app.get("*", (req, res) =>
+    res.sendFile(path.resolve(__dirname1, "frontend", "build", "index.html"))
+  );
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running..");
+  });
+}
+
+// --------------------------deployment------------------------------
+
+
 
 // Error Handling middlewares
 app.use(notFound);
