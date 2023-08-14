@@ -5,9 +5,12 @@ const connectDB = require("./config/db");
 const colors= require("colors");
 const userRoutes=require('./Routes/userRoutes');
 const chatRoutes=require('./Routes/chatRoutes');
+const messageRoutes=require('./Routes/messageRoutes');
 const { notFound, errorHandler } = require("./middleware/errorMiddleware");
+const { Socket } = require("socket.io");
 const PORT=process.env.PORT || 5000;
 const app=express();
+
 
 dotenv.config();
 connectDB();
@@ -19,8 +22,10 @@ app.use(express.json());  //to accept json data
 app.get("/",(req,res)=>{
     res.send("API is running Successfully");
 })
+app.use("/api/message",messageRoutes);
 app.use("/api/user",userRoutes);
 app.use("/api/chat",chatRoutes);
+
 
 // app.get("/api/chat/:id",(req,res)=>{
 //     const singleChat= chats.find((c)=> c._id===req.params.id);
@@ -31,4 +36,29 @@ app.use("/api/chat",chatRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT,console.log(`Server running at port ${PORT}`.yellow.bold));
+const server = app.listen(
+    PORT,
+    console.log(`Server running on PORT ${PORT}...`.yellow.bold)
+  );
+  
+  const io = require("socket.io")(server, {
+    pingTimeout: 60000,
+    cors: {
+      origin: "http://localhost:3000",
+      // credentials: true,
+    },
+  });
+
+io.on("connection",(socket)=>{
+    console.log('connected to socket.io');
+    socket.on("setup", (userData) => {
+        socket.join(userData._id);
+        socket.emit("connected");
+      });
+    
+      socket.on("join chat", (room) => {
+        socket.join(room);
+        console.log("User Joined Room: " + room);
+      });
+})
+
